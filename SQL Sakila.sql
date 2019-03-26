@@ -158,30 +158,47 @@ group by f.title
 order by count(r.inventory_id) desc; 
 
 -- 7f. Write a query to display how much business, in dollars, each store brought in.
-select store.store_id, SUM(amount)
-FROM store
-INNER JOIN staff
-ON store.store_id = staff.store_id
-INNER JOIN payment p 
-ON p.staff_id = staff.staff_id
-GROUP BY store.store_id
-ORDER BY SUM(amount);
+use sakila; 
+select s.store_id, sum(p.amount) as "Total Revenue"
+from store s
+inner join staff st on st.store_id = s.store_id
+inner join payment p on p.staff_id = st.staff_id
+group by s.store_id
+order by sum(p.amount);
 
+-- 7g. Write a query to display for each store its store ID, city, and country.
+select s.store_id, city, country
+from store s
+inner join customer cu on s.store_id = cu.store_id
+inner join staff st on s.store_id = st.store_id
+inner join address a on cu.address_id = a.address_id
+inner join city ci on a.city_id = ci.city_id
+inner join country coun on ci.country_id = coun.country_id;
 
+-- 7h. List the top five genres in gross revenue in descending order. 
+select c.name, sum(p.amount)
+from category c
+inner join film_category fc on c.category_id = fc.category_id
+inner join inventory i on i.film_id = fc.film_id
+inner join rental r on r.inventory_id = i.inventory_id
+inner  join payment p on p.rental_id = r.rental_id
+group by c.name
+LIMIT 5;
 
+-- 8a.  Use the solution from the problem above to create a view.
+create view top_five_grossing_genres as 
 
+select c.name, sum(p.amount)
+from category c
+inner join film_category fc on c.category_id = fc.category_id
+inner join inventory i on i.film_id = fc.film_id
+inner join rental r on r.inventory_id = i.inventory_id
+inner  join payment p on p.rental_id = r.rental_id
+group by c.name
+LIMIT 5;
 
+-- 8b. How would you display the view that you created in 8a?
+select * from top_five_grossing_genres;
 
-/*SELECT f.title
-, f.film_id 
-, f.release_year
-, fa.film_id
-, fa.actor_id
-, a.*
-
-from film f
-	inner join film_actor fa on fa.film_id = f.film_id
-	inner join actor a on a.actor_id = fa.actor_id
-where f.release_year = 2006
-	and a.last_name = 'N'
-limit 5; */
+-- 8c. Write a query to delete it.
+drop view top_five_grossing_genres;
